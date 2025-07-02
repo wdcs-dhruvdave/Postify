@@ -1,25 +1,23 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
+import PostCard from "./components/PostCard";
+import BlogPage from "./components/BlogPage";
 
-function App() {
+const App = ({ children }) => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Header />
+      <Sidebar />
+
+      <main className="p-4 sm:ml-64 pt-20">
+        <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
+          <BlogPage />
+          {children}
+        </div>
+      </main>
+    </>
   );
-}
+};
 
 export default App;
