@@ -1,5 +1,4 @@
 import React from "react";
-import "./loader.css";
 const PostCard = ({ post }) => {
   return (
     <div className="order-1 sm:ml-6 xl:ml-0" style={{ padding: "20px", margin: "20px" }}>
