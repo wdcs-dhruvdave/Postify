@@ -5,26 +5,35 @@ import PostCard from './PostCard';
 const BlogPage = () => {
     const [posts, setPosts] = useState(['']);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setTimeout(() => {
+            fetchPosts()
+                .then((data) => {
+                    setPosts(data.posts);
+                    setLoading(false);
+                    console.log("Log From Blog Page: ", data.posts);
+                })
+                .catch((error) => {
+                    console.error("Error fetching posts:", error);
+                });
+        }, 1500);
+    }, []);
     
-        useEffect(() => {
-        fetchPosts()
-        .then((data) => {
-            setPosts(data.posts);
-            setLoading(false);
-            console.log("Log From Blog Page: ", data.posts);
-        })
-        .catch((error) => {
-            console.error("Error fetching posts:", error);
-            
-        });
-    },[])
+        
 
       if (loading) {
     return (
-      <div className="text-center mt-5">
-        <div className="spinner-border" role="status"></div>
-        <p>Loading crypto data...</p>
-      </div>
+        <>
+            <div style={ {marginLeft: "670px"}}
+    className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+    role="status">
+
+    </div>
+    <p style={ {marginLeft: "660px"}}>Loading...</p>
+    </>
+    
+
     );
   }
 
