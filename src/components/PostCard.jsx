@@ -1,129 +1,81 @@
-import React from "react";
+import React, { useState } from "react";
 const PostCard = ({ post }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const toggleReadMore = () => setIsExpanded(!isExpanded);
+  const isbodyTruncated = post.body.length > 100;
+  const handleEdit = () => {
+    console.log("Edit post:", post.id);
+  };
   return (
-    <div className="order-1 sm:ml-6 xl:ml-0" style={{ padding: "20px", margin: "20px" }}>
-      <h3 className="mb-1 text-slate-900 font-semibold">
-        <div className="flex items-center">
+<div className="bg-white dark:bg-gray-900 w-full max-w-3xl rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6 mx-auto my-6 border border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
           <img
-            className="w-8 h-8 rounded-full"
+            className="w-10 h-10 rounded-full"
             src="https://flowbite.com/docs/images/people/profile-picture-1.jpg"
             alt="User"
           />
-          <button
-            type="button"
-            className="text-sm font-medium text-gray-700 hover:underline dark:text-gray-400 ml-2"
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-            }}
-            aria-label="User profile: John Doe"
+          <div className="text-sm">
+            <p className="font-medium text-gray-900 dark:text-white">John Doe
+              <button
+          type="button"
+          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+          title="Add"
+
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
           >
-            John Doe
-            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-              • 2 days ago
-            </span>
-          </button>
-          <div className="flex items-center ml-2">
-            <button
-              type="button"
-              className="text-sm font-medium text-gray-700 hover:underline dark:text-gray-400 ml-2"
-            >
-              <svg
-                className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 18 18"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 1v16M1 9h16"
-                />
-              </svg>
-            </button>
+            <path d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+            </p>
+            
+            <p className="text-xs text-gray-500 dark:text-gray-400">• 2 days ago</p>
           </div>
         </div>
+        
+        <button type="button" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white" onClick={handleEdit}>
+          <svg class="text-themeColor-500 w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"> <path stroke="none" d="M0 0h24v24H0z"/> <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" /> <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" /> <line x1="16" y1="5" x2="19" y2="8" /></svg>
+            </button>
+      </div>
+      <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">
         {post.title}
       </h3>
+      
+     <p className="text-gray-600 dark:text-gray-300 mb-2 leading-relaxed break-words">
+    {isExpanded ? post.body : `${post.body.slice(0, 100)}...`}
+    </p>
 
-      <div className="prose prose-slate prose-sm text-slate-600">
-        <p>{post.body}</p>
-      </div>
-
-      <div className="flex flex-wrap gap-2 my-2">
-        {Array.isArray(post.tags) &&
-          post.tags.map((tag, index) => (
-            <div
-              key={index}
-              className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            >
-              #{tag}
-            </div>
-          ))}
-      </div>
-
-      <div className="flex items-center gap-4 border-t p-3 bg-muted/50 text-sm text-muted-foreground">
-        <button className="justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent rounded-md flex items-center gap-1.5 p-1 h-auto text-muted-foreground hover:text-primary">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-thumbs-up h-4 w-4"
-          >
-            <path d="M7 10v12" />
-            <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
-          </svg>
-          <span>{post?.reactions?.likes}</span>
+      {isbodyTruncated && (
+        <button
+          onClick={toggleReadMore}
+          className="text-blue-600 hover:underline text-sm font-medium mb-4"
+        >
+          {isExpanded ? "Show Less" : "Read More →"}
         </button>
+      )}
 
-        <button className="justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent rounded-md flex items-center gap-1.5 p-1 h-auto text-muted-foreground hover:text-destructive">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-thumbs-down h-4 w-4"
+      <div className="flex flex-wrap gap-2 mb-4">
+        {post.tags?.map((tag, i) => (
+          <span
+            key={i}
+            className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-300"
           >
-            <path d="M17 14V2" />
-            <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
-          </svg>
-          <span>{post?.reactions?.dislikes}</span>
-        </button>
-
-        <div className="ml-auto flex items-center gap-1.5">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-eye h-4 w-4"
-          >
-            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-          <span>{post.views}</span>
+            #{tag}
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center justify-between border-t pt-4 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1">👍 {post?.reactions?.likes}</div>
+          <div className="flex items-center gap-1">👎 {post?.reactions?.dislikes}</div>
         </div>
+        <div className="flex items-center gap-1">👁️ {post.views}</div>
       </div>
     </div>
   );
