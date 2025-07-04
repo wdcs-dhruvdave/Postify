@@ -1,28 +1,560 @@
-Task: Manage Posts with Context and CRUD Operations
-Build a post management interface that allows users to create, view, edit, and delete blog posts using a dummy REST API.
-Requirements:
-  Display a list of posts
-   -Show a list of posts fetched from the API, including title and body.
-  Add Post
-  -Provide a form to add a new post.
-  -On submit, the new post should be added to the list.
-  
-  Edit Post
-   -Allow editing an existing post.
-   -On submit, update the post in the list.
-  
-  Delete Post
-   -Include a delete button to remove the post from the list.
-  Loading and Empty States
-   -Show a loading message while data is being fetched.
-  Show a message if no posts are available.
-API to Use:
- -Base URL: https://dummyjson.com/posts
- -Endpoints:
-   - GET /posts
-   - GET /posts/{id}
-   - POST /posts/add
-   - PUT /posts/{id}
-   - DELETE /posts/{id}
-You must use Context API for managing global post state.
-(+ bonus if implemented with a custom hook for reusable logic.)
+src/
+│
+├── context/
+│   └── PostContext.jsx
+│
+├── hooks/
+│   └── usePosts.js
+│
+├── components/
+│   ├── PostList.jsx
+│   ├── PostForm.jsx
+│   └── PostItem.jsx
+│
+├── App.jsx
+└── index.js
+
+Here’s a complete React structure for your **Post Management Interface** using Context API and CRUD operations with the dummy JSON API.
+
+---
+
+### 📁 Project Structure
+
+```
+src/
+│
+├── components/
+│   ├── PostForm.jsx
+│   ├── PostItem.jsx
+│   └── PostList.jsx
+│
+├── context/
+│   └── PostContext.jsx
+│
+├── hooks/
+│   └── usePosts.js
+│
+├── App.jsx
+└── index.js
+```
+
+---
+
+## 1. 📦 PostContext – Global State Management
+
+```jsx
+// src/context/PostContext.jsx
+import { createContext, useState, useEffect } from "react";
+import axios from "axios";
+
+export const PostContext = createContext();
+
+export const PostProvider = ({ children }) => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch all posts
+  const fetchPosts = async () => {
+    setLoading(true);
+    const res = await axios.get("https://dummyjson.com/posts");
+    setPosts(res.data.posts);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  // Add post
+  const addPost = async (post) => {
+    const res = await axios.post("https://dummyjson.com/posts/add", post);
+    setPosts((prev) => [res.data, ...prev]);
+  };
+
+  // Edit post
+  const editPost = async (id, updatedPost) => {
+    const res = await axios.put(`https://dummyjson.com/posts/${id}`, updatedPost);
+    setPosts((prev) =>
+      prev.map((post) => (post.id === id ? { ...post, ...res.data } : post))
+    );
+  };
+
+  // Delete post
+  const deletePost = async (id) => {
+    await axios.delete(`https://dummyjson.com/posts/${id}`);
+    setPosts((prev) => prev.filter((post) => post.id !== id));
+  };
+
+  return (
+    <PostContext.Provider
+      value={{ posts, loading, addPost, editPost, deletePost }}
+    >
+      {children}
+    </PostContext.Provider>
+  );
+};
+```
+
+---
+
+## 2. 🔁 Custom Hook – Reusable Logic
+
+```jsx
+// src/hooks/usePosts.js
+import { useContext } from "react";
+import { PostContext } from "../context/PostContext";
+
+const usePosts = () => useContext(PostContext);
+export default usePosts;
+```
+
+---
+
+## 3. 🧱 Components
+
+### 📄 PostList.jsx
+
+```jsx
+// src/components/PostList.jsx
+import usePosts from "../hooks/usePosts";
+import PostItem from "./PostItem";
+
+const PostList = () => {
+  const { posts, loading } = usePosts();
+
+  if (loading) return <p>Loading posts...</p>;
+  if (posts.length === 0) return <p>No posts available.</p>;
+
+  return (
+    <div className="space-y-4">
+      {posts.map((post) => (
+        <PostItem key={post.id} post={post} />
+      ))}
+    </div>
+  );
+};
+
+export default PostList;
+```
+
+---
+
+### 📝 PostItem.jsx
+
+```jsx
+// src/components/PostItem.jsx
+import { useState } from "react";
+import usePosts from "../hooks/usePosts";
+import PostForm from "./PostForm";
+
+const PostItem = ({ post }) => {
+  const { deletePost } = usePosts();
+  const [editing, setEditing] = useState(false);
+
+  return (
+    <div className="border p-4 rounded shadow">
+      {editing ? (
+        <PostForm editData={post} onClose={() => setEditing(false)} />
+      ) : (
+        <>
+          <h2 className="text-xl font-semibold">{post.title}</h2>
+          <p>{post.body}</p>
+          <div className="mt-2 space-x-2">
+            <button onClick={() => setEditing(true)} className="text-blue-500">
+              Edit
+            </button>
+            <button onClick={() => deletePost(post.id)} className="text-red-500">
+              Delete
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default PostItem;
+```
+
+---
+
+### ➕ PostForm.jsx
+
+```jsx
+// src/components/PostForm.jsx
+import { useState, useEffect } from "react";
+import usePosts from "../hooks/usePosts";
+
+const PostForm = ({ editData = null, onClose }) => {
+  const { addPost, editPost } = usePosts();
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+
+  useEffect(() => {
+    if (editData) {
+      setTitle(editData.title);
+      setBody(editData.body);
+    }
+  }, [editData]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (editData) {
+      editPost(editData.id, { title, body });
+      onClose();
+    } else {
+      addPost({ title, body });
+      setTitle("");
+      setBody("");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mb-6">
+      <input
+        className="border p-2 w-full mb-2"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+      />
+      <textarea
+        className="border p-2 w-full mb-2"
+        placeholder="Body"
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        required
+      />
+      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+        {editData ? "Update Post" : "Add Post"}
+      </button>
+      {editData && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="ml-2 text-gray-500 underline"
+        >
+          Cancel
+        </button>
+      )}
+    </form>
+  );
+};
+
+export default PostForm;
+```
+
+---
+
+## 4. 🧩 App.jsx
+
+```jsx
+// src/App.jsx
+import { PostProvider } from "./context/PostContext";
+import PostList from "./components/PostList";
+import PostForm from "./components/PostForm";
+
+function App() {
+  return (
+    <PostProvider>
+      <div className="max-w-xl mx-auto mt-10 p-4">
+        <h1 className="text-2xl font-bold mb-4">Post Manager</h1>
+        <PostForm />
+        <PostList />
+      </div>
+    </PostProvider>
+  );
+}
+
+export default App;
+```
+
+---
+
+## 5. ⚙️ index.js
+
+```jsx
+// src/index.js
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css"; // Optional if using Tailwind or custom styles
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
+
+---
+
+## ✅ Features Covered
+
+* ✅ List posts
+* ✅ Add post
+* ✅ Edit post
+* ✅ Delete post
+* ✅ Context API for state
+* ✅ Custom Hook
+* ✅ Loading + Empty states
+
+Would you like Tailwind CSS styling added or deployed as a GitHub repo?
+
+Here’s a **detailed roadmap, architecture, and flow explanation** for building a full **Post Management Interface** using **React + Context API** and a **dummy REST API**.
+
+---
+
+## 🚀 Goal
+
+Build a CRUD (Create, Read, Update, Delete) blog post interface using:
+
+* React (frontend)
+* Context API (global state)
+* REST API (backend simulation with [https://dummyjson.com/posts](https://dummyjson.com/posts))
+
+---
+
+## 📍 HIGH-LEVEL ROADMAP
+
+| Phase              | Task                                              |
+| ------------------ | ------------------------------------------------- |
+| ✅ 1. Setup         | Initialize React app with Vite/CRA + Tailwind CSS |
+| ✅ 2. API Layer     | Understand endpoints of dummyjson API             |
+| ✅ 3. Context Setup | Build Context API with CRUD methods               |
+| ✅ 4. Components    | Create Form, List, Item components                |
+| ✅ 5. Hook          | Build a `usePosts()` hook for reuse               |
+| ✅ 6. UI/UX         | Handle loading, error, empty states               |
+| ✅ 7. Test          | Verify all features: add, edit, delete            |
+| ✅ 8. (Bonus)       | Add toast, validation, search, pagination         |
+
+---
+
+## 🧠 APPLICATION FLOW
+
+### 1. **App Initialization**
+
+* `App.jsx` wraps the app in `PostProvider`
+* Fetches post data on first render
+
+### 2. **Global State with Context**
+
+* All post data & logic (fetch, add, edit, delete) lives in `PostContext`
+* Any component can use the context via `usePosts()` custom hook
+
+### 3. **Post Fetching (GET)**
+
+* On mount: `GET /posts`
+* Save `posts` array to state
+* Show loading spinner → list or empty message
+
+### 4. **Adding Post (POST)**
+
+* User fills the form (title + body)
+* On submit: `POST /posts/add`
+* API returns the created post → append to global state
+
+### 5. **Editing Post (PUT)**
+
+* Click "Edit" on a post
+* Pre-fill form → on submit: `PUT /posts/:id`
+* API returns updated data → update local state
+
+### 6. **Deleting Post (DELETE)**
+
+* Click "Delete"
+* `DELETE /posts/:id` called
+* Remove post from local state
+
+---
+
+## 🧱 FILE STRUCTURE & RESPONSIBILITIES
+
+```
+src/
+├── components/              # UI building blocks
+│   ├── PostForm.jsx         # Form for adding/editing posts
+│   ├── PostItem.jsx         # Single post UI + edit/delete buttons
+│   └── PostList.jsx         # Loops over posts to render list
+│
+├── context/
+│   └── PostContext.jsx      # Global post state & CRUD logic
+│
+├── hooks/
+│   └── usePosts.js          # Custom hook to use PostContext easily
+│
+├── App.jsx                  # Main app layout + integration
+└── index.js                 # Entry point
+```
+
+---
+
+## 🔁 DATA FLOW DIAGRAM
+
+```plaintext
+[ App.jsx ]
+     ↓
+[ PostProvider ] ← fetchPosts (GET /posts)
+     ↓
+[ PostContext ] → posts, addPost, editPost, deletePost
+     ↓
+usePosts()
+ ├── PostForm (for create/edit) → POST / PUT
+ ├── PostList
+ │     └── PostItem → DELETE
+```
+
+---
+
+## 💻 COMPONENT FLOW
+
+### 🔸 `App.jsx`
+
+* Uses `<PostForm />` for adding new post
+* Uses `<PostList />` to display all posts
+
+### 🔸 `PostContext.jsx`
+
+* Holds all the logic: fetch, add, edit, delete
+* Stores: `posts`, `loading`
+
+### 🔸 `usePosts.js`
+
+* Exposes context with a reusable hook
+
+### 🔸 `PostList.jsx`
+
+* Uses `usePosts()` to get `posts`
+* Maps over each post → `<PostItem />`
+
+### 🔸 `PostItem.jsx`
+
+* Shows single post
+* Edit → toggles `<PostForm />` with initial data
+* Delete → calls `deletePost(id)`
+
+### 🔸 `PostForm.jsx`
+
+* Reusable form for adding or editing
+* Handles both POST and PUT based on props
+
+---
+
+## 🔄 API ENDPOINTS USED
+
+| Action         | Method | Endpoint     | Payload           |
+| -------------- | ------ | ------------ | ----------------- |
+| Get Posts      | GET    | `/posts`     | —                 |
+| Get Post by ID | GET    | `/posts/:id` | —                 |
+| Add Post       | POST   | `/posts/add` | `{ title, body }` |
+| Edit Post      | PUT    | `/posts/:id` | `{ title, body }` |
+| Delete Post    | DELETE | `/posts/:id` | —                 |
+
+---
+
+## 💡 BONUS IDEAS
+
+| Feature              | How                                          |
+| -------------------- | -------------------------------------------- |
+| ✅ Toast Notification | Use `react-hot-toast` or `react-toastify`    |
+| ✅ Form Validation    | Use `react-hook-form` or simple checks       |
+| ✅ Pagination         | API supports `limit` and `skip` query        |
+| ✅ Search Filter      | Filter `posts` by title in frontend          |
+| ✅ Error Handling     | Wrap `axios` in try/catch with UI message    |
+| ✅ Modal Edit Form    | Use modal for editing instead of inline form |
+| ✅ Responsive UI      | Use Tailwind CSS grid/flex                   |
+
+---
+
+## 🛠 TOOLS SUGGESTED
+
+* **React + Vite or CRA**
+* **Tailwind CSS** for styling
+* **Axios** for API calls
+* **React Context API** for state
+* **react-hot-toast** for feedback (optional)
+
+---
+
+## ✅ DONE CHECKLIST
+
+* [x] Initialize app
+* [x] Setup context
+* [x] Fetch posts
+* [x] Add post
+* [x] Edit post
+* [x] Delete post
+* [x] Loading & empty states
+* [ ] Add toast messages *(optional)*
+* [ ] Add search/pagination *(optional)*
+
+---
+
+## 🤔 Questions You May Have
+
+### Q. Why use Context API instead of Redux?
+
+> For small to mid-sized apps, Context is lightweight, built-in, and avoids boilerplate. Redux is better for large-scale, multi-context apps.
+
+### Q. What happens if the API fails?
+
+> You can add try/catch blocks and show error messages using `useState(error)` or a toast.
+
+### Q. Can this connect to a real backend later?
+
+> Yes! Just replace the dummy API with your real backend endpoints.
+
+---
+
+Would you like me to:
+
+* Set this up in a GitHub repo for you?
+* Add Tailwind design polish?
+* Add toast/pagination/search next?
+
+Let me know!
+
+export const fetchPostsfromapi = async (page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
+  try {
+    const response = await API.get(``, {
+      params: {
+        limit,
+        skip,
+      },
+    });
+
+    // Sort by ID (newest first)
+    const sorted = response.data.posts.sort((a, b) => b.id - a.id);
+
+    return {
+      posts: sorted,
+      total: response.data.total,
+      skip: response.data.skip,
+      limit: response.data.limit,
+    };
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return {
+      posts: [],
+      total: 0,
+      skip: 0,
+      limit,
+    };
+  }
+};
+
+
+
+**Subject:** Intimation of Tentative University Exam Schedule (4th Aug – 9th Aug 2025)
+Dear HR Team,
+I’m writing to inform you that I have received a tentative schedule from my university for the upcoming mid-semester exams. The exams are planned to be held between **4th August to 9th August 2025**.
+Please note that this schedule is subject to change based on the placement drive planned during that period.
+I will keep you informed of any updates as soon as they are communicated by the university.
+Kindly take this into consideration, and let me know if any further information or formal procedure is required from my end.
+Thank you for your support.
+Best regards,
+*Dhruv Dave
+MERN Trainee
+**CC:** Nikhil Vibhani, Bharat Jain, Piyush Chikhaliya, Drashti, \[Your Senior’s Name]  
