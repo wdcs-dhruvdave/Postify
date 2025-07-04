@@ -34,36 +34,32 @@ const POSTAPI = axios.create({
 // };
 
 
-export const fetchPostsfromapi = async (
-  // page = 1, limit = 10
-) => {
+export const fetchPostsfromapi = async (page = 1, limit = 10) => {
   // const totalPosts = 251;
   // const skip = Math.max(0, totalPosts - page * limit); 
 
   try {
-    const response = await POSTAPI.get("/posts", 
-    //   {
+    const response = await POSTAPI.get("/posts", {
     //   params: {
     //     limit,
     //     skip,
     //   },
-    // }
-  );
-    console.log("Log From Fetch Api ",response.data);
+    });
+    console.log(response.data);
 
     return {
       posts: response.data, 
-      // total: response.data.total,
-      // skip: response.data.skip,
-      // limit: response.data.limit,
+      total: response.data.total,
+      skip: response.data.skip,
+      limit: response.data.limit,
     };
   } catch (error) {
     console.error("Error fetching posts:", error);
     return {
       posts: [],
-      // total: 0,
-      // skip: 0,
-      // limit,
+      total: 0,
+      skip: 0,
+      limit,
     };
   }
 };

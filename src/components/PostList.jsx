@@ -19,17 +19,21 @@ const PostList = ({ onEdit, onDelete }) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-1">
-      {post.map((item) => {
-        if (!item) return null;
-        return (
-          <PostCard
-            key={item.id}
-            post={item}
-            onEdit={onEdit}
-            onDelete={onDelete} 
-          />
-        );
-      })}
+      {Array.isArray(post) && post.length > 0 ? (
+        post.map((item) => {
+          if (!item) return null;
+          return (
+            <PostCard
+              key={item.id}
+              post={item}
+              onEdit={onEdit}
+              onDelete={onDelete} 
+            />
+          );
+        })
+      ) : (
+        <p>No Posts Available</p>
+      )}
     </div>
   );
 };
