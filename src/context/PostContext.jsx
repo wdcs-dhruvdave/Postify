@@ -32,7 +32,7 @@ const deletePost = async (postId) => {
 }
 
 
- const createPost = async (newPostData) => {
+const createPost = async (newPostData) => {
   setLoading(true);
   try {
     const postData = await createPostfromapi(newPostData);

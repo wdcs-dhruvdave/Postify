@@ -96,7 +96,7 @@ export const createPostfromapi = async (postData) => {
         : [],
     };
 
-    const response = await POSTAPI.post("/posts/", sanitizedData);
+    const response = await POSTAPI.post("/posts/add", sanitizedData);
     return response.data;
   } catch (error) {
     console.error("Error creating post:", error.response?.data || error.message);
