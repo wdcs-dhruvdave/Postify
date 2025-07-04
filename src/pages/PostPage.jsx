@@ -1,9 +1,28 @@
 import PostList from "../components/PostList";
 import PostForm from "../components/PostForm";
 import { useState } from "react";
+import usePost from "../hooks/usePost";
 
 const PostPage = () => {
   const [open, setOpen] = useState(false); 
+  const [editPost, setEditPost] = useState(null);
+
+  const {deletePost} = usePost();
+
+  const handleDelete = (id) => {
+    deletePost(id);
+    console.log("Delete post with ID:", id);
+  }
+
+  const handleEdit = (post) => {
+    setEditPost(post)
+    setOpen(true);
+  }
+
+  const handleClose = () => {
+    setEditPost(null);
+    setOpen(false);
+  }
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-12 py-6">
@@ -17,9 +36,9 @@ const PostPage = () => {
         </button>
       </div>
 
-      <PostForm open={open} onClose={() => setOpen(false)} />
+      <PostForm open={open} onClose={handleClose} post={editPost} />
 
-      <PostList />
+      <PostList onEdit={handleEdit} onDelete={handleDelete} />
     </div>
   );
 };

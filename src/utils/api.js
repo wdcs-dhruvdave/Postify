@@ -2,31 +2,36 @@ import axios from "axios";
 
 const API_URL = "https://dummyjson.com";
 
+const MOKEAPI_URL = "https://68665fdb89803950dbb26f3c.mockapi.io"
+
+
 
 
 const POSTAPI = axios.create({
   baseURL: API_URL,
+
+  // baseURL: MOKEAPI_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-const USERAPI = axios.create({
-  baseURL: `API_URL/users`,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+// const USERAPI = axios.create({
+//   baseURL: `API_URL/users`,
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+// });
 
-export const fetchUsersfromapi = async () => {
-  try {
-    const response = await USERAPI.get("/");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    return [];
-  }
-};
+// export const fetchUsersfromapi = async () => {
+//   try {
+//     const response = await USERAPI.get("/");
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error fetching users:", error);
+//     return [];
+//   }
+// };
 
 
 export const fetchPostsfromapi = async (page = 1, limit = 10) => {
@@ -59,6 +64,16 @@ export const fetchPostsfromapi = async (page = 1, limit = 10) => {
   }
 };
 
+export const deletepostfromapi = async (postId) => {
+  try{
+    const response = await POSTAPI.delete(`/posts/${postId}`)
+    return response.data;
+  }
+  catch(error){
+    console.error("Error deleting post:",error)
+  }
+}
+
 export const editpostfromapi = async (postId , editedPost) =>{
   try{
     const response = await POSTAPI.put(`/posts/${postId}`,editedPost)
@@ -81,7 +96,7 @@ export const createPostfromapi = async (postData) => {
         : [],
     };
 
-    const response = await POSTAPI.post("/posts/add", sanitizedData);
+    const response = await POSTAPI.post("/posts/", sanitizedData);
     return response.data;
   } catch (error) {
     console.error("Error creating post:", error.response?.data || error.message);

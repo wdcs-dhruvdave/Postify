@@ -1,28 +1,41 @@
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import usePosts from "../hooks/usePost";
+import { useEffect } from "react";
 
-const PostForm = ({ open, onClose }) => {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+const PostForm = ({ open, onClose,post }) => {
+  const { register, handleSubmit, formState: { errors }, reset,setValue } = useForm();
   const { createPost ,setPosts, editPost } = usePosts();
-  const isedit = false;
+
+  useEffect(()=>{
+    if(post){
+      setValue('title',post.title);
+      setValue('body',post.body);
+      setValue('tags',post.tags?.join(', '));
+    }
+    else{
+      reset();
+    }
+  },[post,setValue,reset]);
+
 
   const postSubmit = async (data) => {
-    if(isedit)
-    {
+    const formattedTags = data.tags.split(",").map((t) => t.trim());
+
+    if (post) {
+      await editPost(post.id, {
+        ...data,
+        tags: formattedTags,
+      });
+    } else {
+      await createPost({
+        ...data,
+        tags: formattedTags,
+      });
     }
 
-    else
-    {
-    const newPost = await createPost(data);
-    if (newPost) {
-        setPosts((prev) => [newPost, ...prev]);
-        console.log("New Post:", newPost);
-    }
-    }
-
+    onClose();
     reset();
-    onClose(); 
   };
 
   return (
@@ -81,7 +94,7 @@ const PostForm = ({ open, onClose }) => {
                 type="submit"
                 className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
               >
-                Submit
+                {post ? "Update" : "Create"}
               </button>
             </div>
           </form>

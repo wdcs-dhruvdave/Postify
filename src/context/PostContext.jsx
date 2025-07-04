@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { fetchPostsfromapi,createPostfromapi,editpostfromapi } from "../utils/api";
+import { fetchPostsfromapi,createPostfromapi,editpostfromapi, deletepostfromapi } from "../utils/api";
 
 export const PostContext = createContext();
 
@@ -20,6 +20,16 @@ const fetchPosts = async () => {
     setLoading(false);
   }
 };
+
+const deletePost = async (postId) => {
+  try{
+    await deletepostfromapi(postId);
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
+  }
+  catch(error){
+    console.error("Error deleting post:",error)
+  }
+}
 
 
  const createPost = async (newPostData) => {
@@ -53,17 +63,23 @@ const fetchPosts = async () => {
 };
 
     const editPost = (postId, updatedData) => {
+      try{
         setPosts((prev) =>
             prev.map((post) => post.id === postId ? { ...post, ...updatedData } : post)
         );
         editpostfromapi(postId, updatedData);
+      }
+      catch(error){
+        console.error("Error editing post:",error)
+      }
+        
     }
     useEffect(()=>{
         fetchPosts();
     },[])
     
     return(
-        <PostContext.Provider value={{ post, setPosts, loading, setLoading, fetchPosts, createPost, editPost }}>
+        <PostContext.Provider value={{ post, setPosts, loading, deletePost,setLoading, fetchPosts, createPost, editPost }}>
             {children}
         </PostContext.Provider>
     )
