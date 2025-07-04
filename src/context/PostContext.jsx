@@ -12,6 +12,8 @@ const fetchPosts = async () => {
   setLoading(true);
   try {
     const response = await fetchPostsfromapi(); 
+    console.log("🚀 ~ fetchPosts ~ response:", response)
+    
     const sortedPosts = response.posts.sort((a, b) => b.id - a.id); 
     setPosts(sortedPosts);
   } catch (error) {
