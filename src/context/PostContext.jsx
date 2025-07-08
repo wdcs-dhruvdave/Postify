@@ -1,7 +1,10 @@
 import { createContext, useEffect, useState } from "react";
-import { fetchPostsfromapi,createPostfromapi,editpostfromapi, deletepostfromapi } from "../utils/api";
+import { fetchPostsfromapi,createPostfromapi,editpostfromapi, deletepostfromapi, increaseLikes, increaseDislikes } from "../utils/api";
 
 export const PostContext = createContext();
+
+
+
 
 export const PostProvider = ({ children }) => {
     // const [page,setPage] = useState([])
@@ -34,6 +37,56 @@ const deletePost = async (postId) => {
 }
 
 
+const increasePostLikes = async (postId) => {
+  // if (hasReacted(postId)) return; 
+  try {
+    const updatedPost = await increaseLikes(postId);
+    if (updatedPost && updatedPost.reactions ) {
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                reactions: {
+                  ...post.reactions,
+                  likes: updatedPost.reactions.likes,
+                },
+              }
+            : post
+        )
+      );
+    }
+  } catch (error) {
+    console.error("Error increasing likes:", error);
+  }
+};
+
+const increasePostDislikes = async (postId) => {
+  // if (hasReacted(postId)) return; 
+  try {
+    const updatedPost = await increaseDislikes(postId);
+    if (updatedPost && updatedPost.reactions ) {
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                reactions: {
+                  ...post.reactions,
+                  dislikes: updatedPost.reactions.dislikes,
+                },
+              }
+            : post
+        )
+      );
+    }
+  } catch (error) {
+    console.error("Error increasing dislikes:", error);
+  }
+};
+
+
+
  const createPost = async (newPostData) => {
   setLoading(true);
   try {
@@ -46,13 +99,11 @@ const deletePost = async (postId) => {
         ...postData,
         id: postData.id || maxId + 1,
         tags: postData.tags || [],
-        views : 0,
+        views: 0,
         reactions: {
-            likes: 0,
-            dislikes: 0,
-        },
-        
-
+          likes: 0,
+          dislikes: 0
+        }
       };
       console.log("Created post:", newPost);
       return [newPost, ...prev];
@@ -81,7 +132,7 @@ const deletePost = async (postId) => {
     },[])
     
     return(
-        <PostContext.Provider value={{ post, setPosts, loading, deletePost,setLoading, fetchPosts, createPost, editPost }}>
+        <PostContext.Provider value={{ post, setPosts, loading,increasePostDislikes, increasePostLikes,deletePost,setLoading, fetchPosts, createPost, editPost }}>
             {children}
         </PostContext.Provider>
     )
