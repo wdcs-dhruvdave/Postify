@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import PostPreviewModal from "./PostPreview";
+import PostPreviewModal from "./PostPreview"; 
+import { usePost } from "../hooks/usePost";
 
 const PostCard = ({ post, onEdit,onDelete }) => {
   const [isPreviewOpen, setPreviewOpen] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+
+  const { increasePostLikes,increasePostDislikes } = usePost();
 
   const handleViewMore = () => {
     setPreviewOpen(true);
@@ -21,6 +24,15 @@ const PostCard = ({ post, onEdit,onDelete }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleLike = () => {
+
+   increasePostLikes(post.id);
+  };
+
+  const handledisLike = () => {
+    increasePostDislikes(post.id);
+  };
 
   return (
     <>
@@ -99,8 +111,8 @@ const PostCard = ({ post, onEdit,onDelete }) => {
 
         <div className="flex items-center justify-between border-t pt-4 text-sm text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-4">
-            <span>👍 {post?.reactions?.likes}</span>
-            <span>👎 {post?.reactions?.dislikes}</span>
+            <button onClick={handleLike}>👍 {post?.reactions?.likes}</button>
+            <button  onClick={handledisLike}>👎 {post?.reactions?.dislikes}</button>
           </div>
           <span>👁️ {post.views}</span>
         </div>

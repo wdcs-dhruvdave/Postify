@@ -10,11 +10,13 @@ const MOKEAPI_URL = "https://68665fdb89803950dbb26f3c.mockapi.io"
 const POSTAPI = axios.create({
   // baseURL: API_URL,
 
-  baseURL: MOKEAPI_URL,
+  baseURL: MOKEAPI_URL, 
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+
 
 // const USERAPI = axios.create({
 //   baseURL: `API_URL/users`,
@@ -34,22 +36,18 @@ const POSTAPI = axios.create({
 // };
 
 
-export const fetchPostsfromapi = async (
-  // page = 1, limit = 10
-) => {
+export const fetchPostsfromapi = async (page = 1, limit = 10) => {
   // const totalPosts = 251;
   // const skip = Math.max(0, totalPosts - page * limit); 
 
   try {
-    const response = await POSTAPI.get("/posts", 
-    //   {
+    const response = await POSTAPI.get("/posts", {
     //   params: {
     //     limit,
     //     skip,
     //   },
-    // }
-  );
-    console.log("Log From Fetch Api ",response.data);
+    });
+    console.log(response.data);
 
     return {
       posts: response.data, 
@@ -65,6 +63,44 @@ export const fetchPostsfromapi = async (
       // skip: 0,
       // limit,
     };
+  }
+};
+
+export const increaseLikes = async (postId) => {
+  try {
+    const postResponse = await POSTAPI.get(`/posts/${postId}`);
+    const currentReactions = postResponse.data.reactions || { likes: 0, dislikes: 0 };
+    const updatedReactions = {
+      ...currentReactions,
+      likes: currentReactions.likes + 1,
+    };
+
+    const response = await POSTAPI.put(`/posts/${postId}`, {
+      reactions: updatedReactions,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error increasing likes:", error);
+    return null;
+  }
+};
+
+export const increaseDislikes = async (postId) => {
+  try {
+    const postResponse = await POSTAPI.get(`/posts/${postId}`);
+    const currentReactions = postResponse.data.reactions || { likes: 0, dislikes: 0 };
+    const updatedReactions = {
+      ...currentReactions,
+      dislikes: currentReactions.dislikes + 1,
+    };
+
+    const response = await POSTAPI.put(`/posts/${postId}`, {
+      reactions: updatedReactions,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error increasing dislikes:", error);
+    return null;
   }
 };
 
